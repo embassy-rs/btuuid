@@ -11,6 +11,7 @@ extern crate std;
 use core::array::TryFromSliceError;
 use core::fmt::{Debug, Display};
 
+pub mod ad_types;
 pub mod appearance;
 pub mod browse_group_identifiers;
 pub mod characteristic;

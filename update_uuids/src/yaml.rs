@@ -63,6 +63,29 @@ pub fn load_appearance_data(path: &PathBuf) -> Result<Vec<Category>, Box<dyn Err
     Ok(parsed_data.appearance_values)
 }
 
+#[derive(Debug, Deserialize)]
+struct AdTypes {
+    ad_types: Vec<AdType>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AdType {
+    pub value: u8,
+    pub name: String,
+    pub reference: String,
+}
+
+/// Load UUID data from the ad_types folder
+/// This has a different structure than the UUIDs folder, but similar to the appearance data folder
+pub fn load_ad_types(path: &PathBuf) -> Result<Vec<AdType>, Box<dyn Error>> {
+    if path.file_name() != Some("ad_types.yaml".as_ref()) {
+        return Err("Invalid file name, must be ad_types.yaml".into());
+    }
+    let data = std::fs::read_to_string(path)?;
+    let parsed_data: AdTypes = serde_yaml::from_str(&data)?;
+    Ok(parsed_data.ad_types)
+}
+
 fn get_file_name(path: &Path) -> Option<String> {
     path.file_name()?.to_str().map(|s| s.to_string())
 }

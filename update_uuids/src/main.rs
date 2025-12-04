@@ -30,6 +30,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Writing appearances");
     write_appearance(local_folder, output_folder, &commit_hash)?; // assigned_numbers/core/appearance
 
+    println!("Writing ad types");
+    write_ad_types(local_folder, output_folder, &commit_hash)?; // assigned_numbers/core/appearance
+
     Ok(())
 }
 
@@ -53,6 +56,18 @@ fn write_appearance(local_folder: &Path, output_folder: &Path, commit_hash: &str
     let appearance_data = yaml::load_appearance_data(&path)?;
     // Update the appearance values in the source code
     writer::update_appearance(output_folder, &appearance_data, commit_hash)?;
+    Ok(())
+}
+
+/// Parse and write the AD types to the source code
+/// The AD types are loaded from the YAML files in the assigned_numbers/core/ad_types folder
+fn write_ad_types(local_folder: &Path, output_folder: &Path, commit_hash: &str) -> Result<(), Box<dyn Error>> {
+    // Load the YAML data from ./bluetooth-sig/assigned_numbers/core/ad_types.yaml
+    let file_name = "ad_types.yaml";
+    let path = local_folder.join("assigned_numbers").join("core").join(file_name);
+    let ad_types = yaml::load_ad_types(&path)?;
+    // Update the appearance values in the source code
+    writer::update_ad_types(output_folder, &ad_types, commit_hash)?;
     Ok(())
 }
 
