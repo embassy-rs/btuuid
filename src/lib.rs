@@ -163,6 +163,17 @@ impl Display for BluetoothUuid {
     }
 }
 
+#[cfg(feature = "defmt")]
+impl defmt::Format for BluetoothUuid {
+    fn format(&self, fmt: defmt::Formatter) {
+        match self {
+            BluetoothUuid::Uuid16(uuid) => defmt::write!(fmt, "{}", uuid),
+            BluetoothUuid::Uuid32(uuid) => defmt::write!(fmt, "{}", uuid),
+            BluetoothUuid::Uuid128(uuid) => defmt::write!(fmt, "{}", uuid),
+        }
+    }
+}
+
 impl Default for BluetoothUuid {
     fn default() -> Self {
         Self::nil()
@@ -181,15 +192,54 @@ impl From<BluetoothUuid16> for BluetoothUuid {
     }
 }
 
+impl From<u16> for BluetoothUuid {
+    fn from(value: u16) -> Self {
+        Self::from_u16(value)
+    }
+}
+
+impl From<[u8; 2]> for BluetoothUuid {
+    fn from(value: [u8; 2]) -> Self {
+        // Assumes value is in little-endian order
+        Self::Uuid16(BluetoothUuid16(value))
+    }
+}
+
 impl From<BluetoothUuid32> for BluetoothUuid {
     fn from(value: BluetoothUuid32) -> Self {
         Self::from_u32(value.to_u32())
     }
 }
 
+impl From<u32> for BluetoothUuid {
+    fn from(value: u32) -> Self {
+        Self::from_u32(value)
+    }
+}
+
+impl From<[u8; 4]> for BluetoothUuid {
+    fn from(value: [u8; 4]) -> Self {
+        // Assumes value is in little-endian order
+        Self::Uuid32(BluetoothUuid32(value))
+    }
+}
+
 impl From<BluetoothUuid128> for BluetoothUuid {
     fn from(value: BluetoothUuid128) -> Self {
         Self::from_u128(value.to_u128())
+    }
+}
+
+impl From<u128> for BluetoothUuid {
+    fn from(value: u128) -> Self {
+        Self::from_u128(value)
+    }
+}
+
+impl From<[u8; 16]> for BluetoothUuid {
+    fn from(value: [u8; 16]) -> Self {
+        // Assumes value is in little-endian order
+        Self::Uuid128(BluetoothUuid128(value))
     }
 }
 
@@ -306,6 +356,13 @@ macro_rules! impl_uuid {
         impl From<$name> for $num {
             fn from(value: $name) -> Self {
                 value.$to()
+            }
+        }
+
+        impl From<[u8; $bytes]> for $name {
+            fn from(value: [u8; $bytes]) -> Self {
+                // Assumes value is in little-endian order
+                Self(value)
             }
         }
 
