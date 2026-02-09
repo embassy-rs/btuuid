@@ -147,6 +147,42 @@ impl BluetoothUuid {
     }
 }
 
+impl PartialEq<BluetoothUuid16> for BluetoothUuid {
+    fn eq(&self, other: &BluetoothUuid16) -> bool {
+        matches!(self, Self::Uuid16(v) if v == other)
+    }
+}
+
+impl PartialEq<BluetoothUuid> for BluetoothUuid16 {
+    fn eq(&self, other: &BluetoothUuid) -> bool {
+        matches!(other, BluetoothUuid::Uuid16(v) if v == self)
+    }
+}
+
+impl PartialEq<BluetoothUuid32> for BluetoothUuid {
+    fn eq(&self, other: &BluetoothUuid32) -> bool {
+        matches!(self, Self::Uuid32(v) if v == other)
+    }
+}
+
+impl PartialEq<BluetoothUuid> for BluetoothUuid32 {
+    fn eq(&self, other: &BluetoothUuid) -> bool {
+        matches!(other, BluetoothUuid::Uuid32(v) if v == self)
+    }
+}
+
+impl PartialEq<BluetoothUuid128> for BluetoothUuid {
+    fn eq(&self, other: &BluetoothUuid128) -> bool {
+        matches!(self, Self::Uuid128(v) if v == other)
+    }
+}
+
+impl PartialEq<BluetoothUuid> for BluetoothUuid128 {
+    fn eq(&self, other: &BluetoothUuid) -> bool {
+        matches!(other, BluetoothUuid::Uuid128(v) if v == self)
+    }
+}
+
 impl Debug for BluetoothUuid {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "BluetoothUuid({})", self)
@@ -531,5 +567,32 @@ mod test {
 
         // defmt::Format not implemented on Uuid
         assert_eq!(result.into_bytes(), expected.into_bytes());
+    }
+
+    #[test]
+    fn test_enum_partial_eq_16() {
+        let value = BluetoothUuid16::new(42);
+        let variant = BluetoothUuid::Uuid16(value);
+        assert_eq!(variant, value);
+        assert_eq!(value, variant);
+        assert_ne!(variant, BluetoothUuid16::new(13));
+    }
+
+    #[test]
+    fn test_enum_partial_eq_32() {
+        let value = BluetoothUuid32::new(42);
+        let variant = BluetoothUuid::Uuid32(value);
+        assert_eq!(variant, value);
+        assert_eq!(value, variant);
+        assert_ne!(variant, BluetoothUuid32::new(13));
+    }
+
+    #[test]
+    fn test_enum_partial_eq_128() {
+        let value = BluetoothUuid128::new(42);
+        let variant = BluetoothUuid::Uuid128(value);
+        assert_eq!(variant, value);
+        assert_eq!(value, variant);
+        assert_ne!(variant, BluetoothUuid128::new(13));
     }
 }
