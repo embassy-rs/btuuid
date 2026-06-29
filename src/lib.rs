@@ -444,11 +444,11 @@ impl BluetoothUuid128 {
     ///
     /// The fields are returned in big-endian order: `(time_low, time_mid, time_high_and_version, clock_seq_and_node)`.
     pub const fn to_fields(&self) -> (u32, u16, u16, u64) {
-        let b = &self.0;
-        let d4 = u64::from_le_bytes([b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7]]);
-        let d3 = u16::from_le_bytes([b[8], b[9]]);
-        let d2 = u16::from_le_bytes([b[10], b[11]]);
-        let d1 = u32::from_le_bytes([b[12], b[13], b[14], b[15]]);
+        let value = u128::from_le_bytes(self.0);
+        let d4 = value as u64; // bytes 0..8  (low 64 bits)
+        let d3 = ((value >> 64) & 0xFFFF) as u16; // bytes 8..10
+        let d2 = ((value >> 80) & 0xFFFF) as u16; // bytes 10..12
+        let d1 = (value >> 96) as u32; // bytes 12..16 (high 32 bits)
         (d1, d2, d3, d4)
     }
 
@@ -531,5 +531,24 @@ mod test {
 
         // defmt::Format not implemented on Uuid
         assert_eq!(result.into_bytes(), expected.into_bytes());
+    }
+
+    #[test]
+    fn test_to_fields_field_mapping() {
+        let uuid = BluetoothUuid128::from_be_bytes([
+            0x00, 0x00, 0x12, 0x34, 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0x80, 0x5F, 0x9B, 0x34, 0xFB,
+        ]);
+        let (d1, d2, d3, d4) = uuid.to_fields();
+        assert_eq!(d1, 0x00001234);
+        assert_eq!(d2, 0x0000);
+        assert_eq!(d3, 0x1000);
+        assert_eq!(d4, 0x80_00_00_80_5F_9B_34_FBu64);
+    }
+
+    #[test]
+    fn test_from_u128_shortens_known_16bit_uuid() {
+        let full: u128 = 0x0000_1234_0000_1000_8000_0080_5F9B_34FB;
+        let result = BluetoothUuid::from_u128(full);
+        assert_eq!(result, BluetoothUuid::from_u16(0x1234));
     }
 }
